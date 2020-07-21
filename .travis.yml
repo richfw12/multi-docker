@@ -1,0 +1,28 @@
+sudo: required
+services:
+  - docker
+
+before_install:
+  - docker build-t richfw12/react-test -f ./client/Dockerfile.dev ./client
+
+
+script:
+  - docker run -e CI=true richfw12/react-test npm test 
+
+
+after_success:
+  - docker build -t richfw12/multi-client ./client 
+  - docker build -t richfw12/multi-nginx ./nginx 
+  - docker build -t richfw12/multi-server ./server 
+  - docker build -t richfw12/multi-worker ./worker 
+
+# login into docker cli
+
+- echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_ID" --password-stdin
+  
+# push to docker hub
+
+- docker push richfw12/multi-client
+- docker push richfw12/multi-nginx
+- docker push richfw12/multi-server
+- docker push richfw12/multi-worker
